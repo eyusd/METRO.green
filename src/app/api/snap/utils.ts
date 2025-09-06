@@ -5,6 +5,7 @@
 import Fuse from 'fuse.js';
 import { stations } from '@/lib/stations';
 import type { Feature, Point } from 'geojson';
+import { CONFIG } from './config';
 
 // Types
 export interface StationProperties {
@@ -32,12 +33,6 @@ export interface ValidationResult {
   error?: string;
 }
 
-// Configuration
-const VALIDATION_CONFIG = {
-  MAX_DISTANCE_METERS: 50,
-  FUZZY_SEARCH_THRESHOLD: 0.6, // Lower is more strict
-  MIN_CONFIDENCE_SCORE: 0.7,
-} as const;
 
 // Earth's radius in meters for distance calculations
 const EARTH_RADIUS_METERS = 6371000;
@@ -81,7 +76,7 @@ function createFuseInstance(): Fuse<StationFeature> {
   
   return new Fuse(stationFeatures, {
     includeScore: true,
-    threshold: VALIDATION_CONFIG.FUZZY_SEARCH_THRESHOLD,
+    threshold: CONFIG.FUZZY_SEARCH_THRESHOLD,
     ignoreLocation: true,
     keys: ['properties.nom_gares'],
     findAllMatches: false,
@@ -130,6 +125,52 @@ export function findBestStationMatch(searchTerm: string): StationMatch | null {
 }
 
 /**
+ * Check if user coordinates are within acceptable distance of any station
+ */
+export function isUserNearAnyStation(
+  userCoords: { latitude: number; longitude: number }
+): { isNearStation: boolean; nearestDistance?: number; nearestStation?: string } {
+  if (
+    typeof userCoords.latitude !== 'number' ||
+    typeof userCoords.longitude !== 'number' ||
+    isNaN(userCoords.latitude) ||
+    isNaN(userCoords.longitude)
+  ) {
+    return { isNearStation: false };
+  }
+
+  const stationFeatures = getStationFeatures();
+  let nearestDistance = Infinity;
+  let nearestStation: string | undefined;
+
+  for (const station of stationFeatures) {
+    const [longitude, latitude] = station.geometry.coordinates;
+    const stationPoint = { latitude, longitude };
+    const distance = calculateDistance(userCoords, stationPoint);
+
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearestStation = station.properties.nom_gares;
+    }
+
+    // Early exit if we find a station within acceptable range
+    if (distance <= CONFIG.MAX_DISTANCE_METERS) {
+      return {
+        isNearStation: true,
+        nearestDistance: Math.round(distance),
+        nearestStation: station.properties.nom_gares,
+      };
+    }
+  }
+
+  return {
+    isNearStation: false,
+    nearestDistance: Math.round(nearestDistance),
+    nearestStation,
+  };
+}
+
+/**
  * Check if user coordinates are within acceptable distance of station location
  */
 export function isWithinStationRadius(
@@ -141,7 +182,7 @@ export function isWithinStationRadius(
   const distance = calculateDistance(userCoords, stationPoint);
 
   return {
-    isWithin: distance <= VALIDATION_CONFIG.MAX_DISTANCE_METERS,
+    isWithin: distance <= CONFIG.MAX_DISTANCE_METERS,
     distance,
   };
 }
@@ -175,7 +216,7 @@ export function validateStationAndLocation(
     }
 
     // Check confidence threshold
-    if (match.score < VALIDATION_CONFIG.MIN_CONFIDENCE_SCORE) {
+    if (match.score < CONFIG.MIN_CONFIDENCE_SCORE) {
       return {
         isValid: false,
         confidence: match.score,
@@ -219,7 +260,7 @@ export function validateStationAndLocation(
       distanceFromStation: Math.round(distance),
       error: isWithin
         ? undefined
-        : `User location is ${Math.round(distance)}m from station (max: ${VALIDATION_CONFIG.MAX_DISTANCE_METERS}m)`,
+        : `User location is ${Math.round(distance)}m from station (max: ${CONFIG.MAX_DISTANCE_METERS}m)`,
     };
   } catch (error) {
     console.error('Error in validateStationAndLocation:', error);

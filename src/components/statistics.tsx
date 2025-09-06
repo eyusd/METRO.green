@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,31 +10,32 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { TrendingUp, X } from "lucide-react"
-import { useGameStore } from "@/lib/store"
-import { stations } from "@/lib/stations"
-import { StatisticsIcon } from "./statistics-icon"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import type { NotificationData } from "./main-content"
+} from "@/components/ui/dialog";
+import { TrendingUp, X } from "lucide-react";
+import { useGameStore } from "@/lib/store";
+import { stations } from "@/lib/stations";
+import { StatisticsIcon } from "./statistics-icon";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { NotificationData } from "./main-content";
 
 interface StatisticsProps {
-  showNotification: (data: NotificationData) => void
+  showNotification: (data: NotificationData) => void;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 interface LineStats {
-  lineName: string
-  mode: string
-  totalStations: number
-  visitedStations: number
-  percentage: number
-  color: string
+  lineName: string;
+  mode: string;
+  totalStations: number;
+  visitedStations: number;
+  percentage: number;
+  color: string;
 }
 
 interface GroupedStats {
-  [mode: string]: LineStats[]
+  [mode: string]: LineStats[];
 }
-
 
 // Function to sort lines numerically
 const sortLines = (lines: LineStats[], mode: string): LineStats[] => {
@@ -43,104 +44,110 @@ const sortLines = (lines: LineStats[], mode: string): LineStats[] => {
       // Handle special cases first
       if (a.lineName.includes("bis") || b.lineName.includes("bis")) {
         if (a.lineName.includes("bis") && b.lineName.includes("bis")) {
-          const aBase = parseFloat(a.lineName.replace(/[^0-9.]/g, ""))
-          const bBase = parseFloat(b.lineName.replace(/[^0-9.]/g, ""))
-          return aBase - bBase
+          const aBase = parseFloat(a.lineName.replace(/[^0-9.]/g, ""));
+          const bBase = parseFloat(b.lineName.replace(/[^0-9.]/g, ""));
+          return aBase - bBase;
         }
         // Put bis lines after their base number
         if (a.lineName.includes("bis")) {
-          const baseA = parseFloat(a.lineName.replace(/[^0-9.]/g, ""))
-          const baseB = parseFloat(b.lineName)
-          return baseA === baseB ? 1 : baseA - baseB
+          const baseA = parseFloat(a.lineName.replace(/[^0-9.]/g, ""));
+          const baseB = parseFloat(b.lineName);
+          return baseA === baseB ? 1 : baseA - baseB;
         }
         if (b.lineName.includes("bis")) {
-          const baseA = parseFloat(a.lineName)
-          const baseB = parseFloat(b.lineName.replace(/[^0-9.]/g, ""))
-          return baseA === baseB ? -1 : baseA - baseB
+          const baseA = parseFloat(a.lineName);
+          const baseB = parseFloat(b.lineName.replace(/[^0-9.]/g, ""));
+          return baseA === baseB ? -1 : baseA - baseB;
         }
       }
-      
+
       // Handle 3a/3b for trams
-      if (a.lineName.includes("a") || a.lineName.includes("b") || 
-          b.lineName.includes("a") || b.lineName.includes("b")) {
-        const aNum = parseFloat(a.lineName.replace(/[^0-9.]/g, ""))
-        const bNum = parseFloat(b.lineName.replace(/[^0-9.]/g, ""))
+      if (
+        a.lineName.includes("a") ||
+        a.lineName.includes("b") ||
+        b.lineName.includes("a") ||
+        b.lineName.includes("b")
+      ) {
+        const aNum = parseFloat(a.lineName.replace(/[^0-9.]/g, ""));
+        const bNum = parseFloat(b.lineName.replace(/[^0-9.]/g, ""));
         if (aNum === bNum) {
-          return a.lineName.localeCompare(b.lineName)
+          return a.lineName.localeCompare(b.lineName);
         }
-        return aNum - bNum
+        return aNum - bNum;
       }
-      
+
       // Regular numerical sort
-      const aNum = parseFloat(a.lineName)
-      const bNum = parseFloat(b.lineName)
+      const aNum = parseFloat(a.lineName);
+      const bNum = parseFloat(b.lineName);
       if (!isNaN(aNum) && !isNaN(bNum)) {
-        return aNum - bNum
+        return aNum - bNum;
       }
     }
-    
-    // For RER or fallback, sort alphabetically
-    return a.lineName.localeCompare(b.lineName)
-  })
-}
 
-export function Statistics({ }: StatisticsProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const visitedStations = useGameStore((state) => state.visitedStations)
+    // For RER or fallback, sort alphabetically
+    return a.lineName.localeCompare(b.lineName);
+  });
+};
+
+export function Statistics({ showNotification, isOpen, onOpenChange }: StatisticsProps) {
+  const visitedStations = useGameStore((state) => state.visitedStations);
 
   // Calculate statistics for each line grouped by mode
   const statistics: GroupedStats = useMemo(() => {
-    const lineMap = new Map<string, {
-      totalStations: Set<string>
-      visitedStations: Set<string>
-      mode: string
-      color: string
-    }>()
+    const lineMap = new Map<
+      string,
+      {
+        totalStations: Set<string>;
+        visitedStations: Set<string>;
+        mode: string;
+        color: string;
+      }
+    >();
 
     // Process all stations to build line statistics
     stations.features.forEach((feature) => {
-      const stationName = feature.properties?.nom_gares
-      const rescom = feature.properties?.res_com || ""
-      const color = feature.properties?.colourweb_hexa || "000000"
-      
-      if (!stationName || !rescom) return
+      const stationName = feature.properties?.nom_gares;
+      const rescom = feature.properties?.res_com || "";
+      const color = feature.properties?.colourweb_hexa || "000000";
+
+      if (!stationName || !rescom) return;
 
       // Extract mode and line name from res_com (e.g., "METRO 1", "RER A", "TRAM 3a")
-      const parts = rescom.split(" ")
-      if (parts.length < 2) return
-      
-      const mode = parts[0]
-      const lineName = parts.slice(1).join(" ")
-      const lineKey = `${mode}_${lineName}`
+      const parts = rescom.split(" ");
+      if (parts.length < 2) return;
+
+      const mode = parts[0];
+      const lineName = parts.slice(1).join(" ");
+      const lineKey = `${mode}_${lineName}`;
 
       if (!lineMap.has(lineKey)) {
         lineMap.set(lineKey, {
           totalStations: new Set(),
           visitedStations: new Set(),
           mode,
-          color
-        })
+          color,
+        });
       }
 
-      const lineData = lineMap.get(lineKey)!
-      lineData.totalStations.add(stationName)
-      
+      const lineData = lineMap.get(lineKey)!;
+      lineData.totalStations.add(stationName);
+
       if (visitedStations.includes(stationName)) {
-        lineData.visitedStations.add(stationName)
+        lineData.visitedStations.add(stationName);
       }
-    })
+    });
 
     // Convert to grouped structure
-    const grouped: GroupedStats = {}
-    
+    const grouped: GroupedStats = {};
+
     lineMap.forEach((data, lineKey) => {
-      const [mode, lineName] = lineKey.split("_", 2)
-      const totalCount = data.totalStations.size
-      const visitedCount = data.visitedStations.size
-      const percentage = totalCount > 0 ? (visitedCount / totalCount) * 100 : 0
+      const [mode, lineName] = lineKey.split("_", 2);
+      const totalCount = data.totalStations.size;
+      const visitedCount = data.visitedStations.size;
+      const percentage = totalCount > 0 ? (visitedCount / totalCount) * 100 : 0;
 
       if (!grouped[mode]) {
-        grouped[mode] = []
+        grouped[mode] = [];
       }
 
       grouped[mode].push({
@@ -149,56 +156,56 @@ export function Statistics({ }: StatisticsProps) {
         totalStations: totalCount,
         visitedStations: visitedCount,
         percentage,
-        color: data.color
-      })
-    })
+        color: data.color,
+      });
+    });
 
     // Sort lines within each mode using proper numerical sorting
-    Object.keys(grouped).forEach(mode => {
-      grouped[mode] = sortLines(grouped[mode], mode)
-    })
+    Object.keys(grouped).forEach((mode) => {
+      grouped[mode] = sortLines(grouped[mode], mode);
+    });
 
-    return grouped
-  }, [visitedStations])
+    return grouped;
+  }, [visitedStations]);
 
   // Calculate overall statistics
   const overallStats = useMemo(() => {
-    const totalStations = new Set<string>()
-    const visitedStationsSet = new Set(visitedStations)
-    
-    stations.features.forEach((feature) => {
-      const stationName = feature.properties?.nom_gares
-      if (stationName) {
-        totalStations.add(stationName)
-      }
-    })
+    const totalStations = new Set<string>();
+    const visitedStationsSet = new Set(visitedStations);
 
-    const totalCount = totalStations.size
-    const visitedCount = visitedStationsSet.size
-    const percentage = totalCount > 0 ? (visitedCount / totalCount) * 100 : 0
+    stations.features.forEach((feature) => {
+      const stationName = feature.properties?.nom_gares;
+      if (stationName) {
+        totalStations.add(stationName);
+      }
+    });
+
+    const totalCount = totalStations.size;
+    const visitedCount = visitedStationsSet.size;
+    const percentage = totalCount > 0 ? (visitedCount / totalCount) * 100 : 0;
 
     return {
       totalStations: totalCount,
       visitedStations: visitedCount,
-      percentage
-    }
-  }, [visitedStations])
+      percentage,
+    };
+  }, [visitedStations]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange} modal={false}>
       <DialogTrigger asChild>
         <motion.div
           whileHover={{ scale: 1.08, y: -2 }}
           whileTap={{ scale: 0.92 }}
           transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="lg"
             className="h-12 w-12 rounded-full bg-gradient-to-br from-slate-50 to-gray-50 dark:from-gray-900 dark:to-gray-950 border border-slate-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-all duration-200 hover:from-slate-100 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-900 backdrop-blur-sm"
           >
             <motion.div
-              animate={{ 
+              animate={{
                 rotate: isOpen ? 180 : 0,
                 scale: isOpen ? 1.1 : 1,
               }}
@@ -209,7 +216,10 @@ export function Statistics({ }: StatisticsProps) {
           </Button>
         </motion.div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] border-0 bg-black/95 backdrop-blur-xl" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent
+        className="sm:max-w-xl max-h-[calc(90dvh-150px)] border-0 bg-black/95 backdrop-blur-xl"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader className="relative">
           <DialogTitle className="text-white text-lg font-semibold">
             Game Statistics
@@ -217,10 +227,10 @@ export function Statistics({ }: StatisticsProps) {
           <DialogDescription className="text-gray-300 text-sm">
             Your progress across all metro, RER, and tram lines
           </DialogDescription>
-          
+
           {/* Close Button */}
           <motion.button
-            onClick={() => setIsOpen(false)}
+            onClick={() => onOpenChange(false)}
             className="absolute -top-1 -right-1 h-8 w-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 hover:bg-black/80 transition-all duration-200 flex items-center justify-center"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -231,15 +241,18 @@ export function Statistics({ }: StatisticsProps) {
             <X className="size-4 text-white" />
           </motion.button>
         </DialogHeader>
-        
-        <ScrollArea className="max-h-[60vh] pr-4">
+
+        <ScrollArea className="max-h-[calc(60dvh-150px)] pr-4">
           <div className="space-y-6">
             {/* Overall Progress */}
             <div className="bg-gradient-to-br from-emerald-950/40 to-gray-950/40 backdrop-blur-sm p-4 rounded-lg border border-emerald-950">
-              <h3 className="font-semibold text-lg mb-2 text-white">Overall Progress</h3>
+              <h3 className="font-semibold text-lg mb-2 text-white">
+                Overall Progress
+              </h3>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-300">
-                  {overallStats.visitedStations} / {overallStats.totalStations} stations
+                  {overallStats.visitedStations} / {overallStats.totalStations}{" "}
+                  stations
                 </span>
                 <span className="font-bold text-lg text-emerald-400">
                   {overallStats.percentage.toFixed(1)}%
@@ -247,7 +260,7 @@ export function Statistics({ }: StatisticsProps) {
               </div>
               {/* Progress Bar */}
               <div className="w-full bg-gray-700/50 rounded-full h-3 mt-2">
-                <div 
+                <div
                   className="bg-gradient-to-r from-emerald-500 to-cyan-500 h-3 rounded-full transition-all duration-800 ease-out"
                   style={{ width: `${overallStats.percentage}%` }}
                 />
@@ -257,8 +270,11 @@ export function Statistics({ }: StatisticsProps) {
             {/* Mode Groups */}
             {Object.entries(statistics)
               .sort(([a], [b]) => {
-                const order = { "METRO": 1, "RER": 2, "TRAM": 3 }
-                return (order[a as keyof typeof order] || 4) - (order[b as keyof typeof order] || 4)
+                const order = { METRO: 1, RER: 2, TRAM: 3 };
+                return (
+                  (order[a as keyof typeof order] || 4) -
+                  (order[b as keyof typeof order] || 4)
+                );
               })
               .map(([mode, lines]) => (
                 <div key={mode} className="space-y-3">
@@ -270,11 +286,14 @@ export function Statistics({ }: StatisticsProps) {
                     />
                     {mode}
                   </h3>
-                  
+
                   {/* Compact grid layout */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                     {lines.map((line) => (
-                      <StatisticsIcon line={line} key={`${line.mode}_${line.lineName}`} />
+                      <StatisticsIcon
+                        line={line}
+                        key={`${line.mode}_${line.lineName}`}
+                      />
                     ))}
                   </div>
                 </div>
@@ -283,5 +302,5 @@ export function Statistics({ }: StatisticsProps) {
         </ScrollArea>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

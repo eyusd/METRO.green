@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,137 +10,140 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { 
-  RotateCcw, 
-  Trash2, 
-  Download, 
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  RotateCcw,
+  Trash2,
+  Download,
   Upload,
   AlertTriangle,
   CheckCircle,
   Info,
   Cog,
-  X
-} from "lucide-react"
-import { useGameStore } from "@/lib/store"
-import type { NotificationData } from "./main-content"
+  X,
+} from "lucide-react";
+import { useGameStore } from "@/lib/store";
+import type { NotificationData } from "./main-content";
 
 interface SettingsProps {
-  showNotification: (data: NotificationData) => void
+  showNotification: (data: NotificationData) => void;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function Settings({ showNotification }: SettingsProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [showResetConfirm, setShowResetConfirm] = useState(false)
-  const [showImportDialog, setShowImportDialog] = useState(false)
-  const [importData, setImportData] = useState("")
-  
-  const { visitedStations, resetGame, addStation, getStationCount } = useGameStore()
+export function Settings({ showNotification, isOpen, onOpenChange }: SettingsProps) {
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importData, setImportData] = useState("");
+
+  const { visitedStations, resetGame, addStation, getStationCount } =
+    useGameStore();
 
   // Export game data as JSON
   const exportGameData = () => {
     const gameData = {
       visitedStations,
       exportDate: new Date().toISOString(),
-      version: "1.0"
-    }
-    
-    const dataStr = JSON.stringify(gameData, null, 2)
-    const dataBlob = new Blob([dataStr], { type: "application/json" })
-    const url = URL.createObjectURL(dataBlob)
-    
-    const link = document.createElement("a")
-    link.href = url
-    link.download = `metro-game-save-${new Date().toISOString().split('T')[0]}.json`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
+      version: "1.0",
+    };
+
+    const dataStr = JSON.stringify(gameData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `metro-game-save-${
+      new Date().toISOString().split("T")[0]
+    }.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   // Import game data from JSON
   const importGameData = () => {
     try {
-      const parsed = JSON.parse(importData)
-      
+      const parsed = JSON.parse(importData);
+
       if (!parsed.visitedStations || !Array.isArray(parsed.visitedStations)) {
-        throw new Error("Invalid save data format")
+        throw new Error("Invalid save data format");
       }
-      
+
       // Reset current game and import stations
-      resetGame()
+      resetGame();
       parsed.visitedStations.forEach((station: string) => {
-        addStation(station)
-      })
-      
-      setImportData("")
-      setShowImportDialog(false)
+        addStation(station);
+      });
+
+      setImportData("");
+      setShowImportDialog(false);
       showNotification({
-        type: 'success',
-        title: 'Import Successful',
+        type: "success",
+        title: "Import Successful",
         message: `Successfully imported ${parsed.visitedStations.length} visited stations!`,
         details: {
-          tip: 'Your previous progress has been restored'
-        }
-      })
-      
+          tip: "Your previous progress has been restored",
+        },
+      });
     } catch (error) {
       showNotification({
-        type: 'error',
-        title: 'Import Failed',
-        message: 'Error importing save data. Please check the file format.',
+        type: "error",
+        title: "Import Failed",
+        message: "Error importing save data. Please check the file format.",
         details: {
-          reason: error instanceof Error ? error.message : 'Unknown error',
-          tip: 'Make sure you\'re using a valid game save file'
-        }
-      })
-      console.error("Import error:", error)
+          reason: error instanceof Error ? error.message : "Unknown error",
+          tip: "Make sure you're using a valid game save file",
+        },
+      });
+      console.error("Import error:", error);
     }
-  }
+  };
 
   // Handle file upload for import
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        const content = e.target?.result as string
-        setImportData(content)
-      }
-      reader.readAsText(file)
+        const content = e.target?.result as string;
+        setImportData(content);
+      };
+      reader.readAsText(file);
     }
-  }
+  };
 
   // Reset game with confirmation
   const handleResetGame = () => {
-    resetGame()
-    setShowResetConfirm(false)
+    resetGame();
+    setShowResetConfirm(false);
     showNotification({
-      type: 'success',
-      title: 'Game Reset Complete',
-      message: 'Game has been reset! All progress has been cleared.',
+      type: "success",
+      title: "Game Reset Complete",
+      message: "Game has been reset! All progress has been cleared.",
       details: {
-        tip: 'Start exploring Paris metro stations to build your collection again'
-      }
-    })
-  }
+        tip: "Start exploring Paris metro stations to build your collection again",
+      },
+    });
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange} modal={false}>
       <DialogTrigger asChild>
         <motion.div
           whileHover={{ scale: 1.08, y: -2 }}
           whileTap={{ scale: 0.92 }}
           transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="lg"
             className="h-12 w-12 rounded-full bg-gradient-to-br from-slate-50 to-gray-50 dark:from-gray-900 dark:to-gray-950 border border-slate-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-all duration-200 hover:from-slate-100 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-900 backdrop-blur-sm"
           >
             <motion.div
-              animate={{ 
+              animate={{
                 rotate: isOpen ? 90 : 0,
                 scale: isOpen ? 1.1 : 1,
               }}
@@ -151,16 +154,20 @@ export function Settings({ showNotification }: SettingsProps) {
           </Button>
         </motion.div>
       </DialogTrigger>
-      <DialogContent showCloseButton={false} className="sm:max-w-md bg-black/95 border-gray-800 text-white" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent
+        showCloseButton={false}
+        className="sm:max-w-xl bg-black/95 border-gray-800 text-white max-h-[calc(90dvh-150px)]"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader className="relative">
           <DialogTitle className="text-white">Game Settings</DialogTitle>
           <DialogDescription className="text-gray-300">
             Manage your game preferences and data
           </DialogDescription>
-          
+
           {/* Close Button */}
           <motion.button
-            onClick={() => setIsOpen(false)}
+            onClick={() => onOpenChange(false)}
             className="absolute -top-1 -right-1 h-8 w-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 hover:bg-black/80 transition-all duration-200 flex items-center justify-center"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -171,10 +178,9 @@ export function Settings({ showNotification }: SettingsProps) {
             <X className="size-4 text-white" />
           </motion.button>
         </DialogHeader>
-        
-        <ScrollArea className="max-h-[60vh] pr-4">
+
+        <ScrollArea className="max-h-[calc(60dvh-150px)] pr-4">
           <div className="space-y-6">
-            
             {/* Game Statistics Section */}
             <div className="space-y-3">
               <h3 className="font-semibold text-lg flex items-center gap-2 text-white">
@@ -183,12 +189,18 @@ export function Settings({ showNotification }: SettingsProps) {
               </h3>
               <div className="bg-gradient-to-br from-emerald-950/40 to-gray-950/40 backdrop-blur-sm p-4 rounded-lg border border-gray-700/20 space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-300">Stations Visited:</span>
-                  <span className="font-medium text-white">{getStationCount()}</span>
+                  <span className="text-sm text-gray-300">
+                    Stations Visited:
+                  </span>
+                  <span className="font-medium text-white">
+                    {getStationCount()}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-300">Save Location:</span>
-                  <span className="font-medium text-xs text-white">Browser Local Storage</span>
+                  <span className="font-medium text-xs text-white">
+                    Browser Local Storage
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-300">Auto-Save:</span>
@@ -206,29 +218,29 @@ export function Settings({ showNotification }: SettingsProps) {
                 <Download className="h-4 w-4" />
                 Data Management
               </h3>
-              
+
               <div className="space-y-2">
                 {/* Export Data */}
-                <Button 
+                <Button
                   onClick={exportGameData}
-                  variant="outline" 
+                  variant="outline"
                   className="w-full justify-start border-emerald-950 bg-gradient-to-br from-emerald-950/40 to-gray-950/40 backdrop-blur-sm text-white hover:bg-emerald-950/40 hover:text-emerald-300"
                   disabled={getStationCount() === 0}
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Export Save Data
                 </Button>
-                
+
                 {/* Import Data */}
-                <Button 
+                <Button
                   onClick={() => setShowImportDialog(!showImportDialog)}
-                  variant="outline" 
+                  variant="outline"
                   className="w-full justify-start border-emerald-950 bg-gradient-to-br from-emerald-950/40 to-gray-950/40 backdrop-blur-sm text-white hover:bg-emerald-950/40 hover:text-emerald-300"
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   Import Save Data
                 </Button>
-                
+
                 {/* Import Dialog */}
                 {showImportDialog && (
                   <div className="border border-gray-700 rounded-lg p-4 space-y-3 bg-gradient-to-br from-gray-900/40 to-gray-950/40 backdrop-blur-sm">
@@ -243,7 +255,7 @@ export function Settings({ showNotification }: SettingsProps) {
                         className="w-full text-sm border border-gray-600 bg-gray-800 text-white rounded p-2"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-white">
                         Or paste save data:
@@ -255,9 +267,9 @@ export function Settings({ showNotification }: SettingsProps) {
                         className="w-full h-20 text-xs border border-gray-600 bg-gray-800 text-white rounded p-2 font-mono placeholder-gray-400"
                       />
                     </div>
-                    
+
                     <div className="flex gap-2">
-                      <Button 
+                      <Button
                         onClick={importGameData}
                         disabled={!importData.trim()}
                         size="sm"
@@ -265,10 +277,10 @@ export function Settings({ showNotification }: SettingsProps) {
                       >
                         Import
                       </Button>
-                      <Button 
+                      <Button
                         onClick={() => {
-                          setShowImportDialog(false)
-                          setImportData("")
+                          setShowImportDialog(false);
+                          setImportData("");
                         }}
                         variant="outline"
                         size="sm"
@@ -288,11 +300,11 @@ export function Settings({ showNotification }: SettingsProps) {
                 <AlertTriangle className="h-4 w-4" />
                 Danger Zone
               </h3>
-              
+
               {!showResetConfirm ? (
-                <Button 
+                <Button
                   onClick={() => setShowResetConfirm(true)}
-                  variant="destructive" 
+                  variant="destructive"
                   className="w-full justify-start"
                   disabled={getStationCount() === 0}
                 >
@@ -306,11 +318,11 @@ export function Settings({ showNotification }: SettingsProps) {
                     <span className="font-medium">Are you sure?</span>
                   </div>
                   <p className="text-sm text-red-300">
-                    This will permanently delete all your visited stations ({getStationCount()} stations). 
-                    This action cannot be undone.
+                    This will permanently delete all your visited stations (
+                    {getStationCount()} stations). This action cannot be undone.
                   </p>
                   <div className="flex gap-2">
-                    <Button 
+                    <Button
                       onClick={handleResetGame}
                       variant="destructive"
                       size="sm"
@@ -319,7 +331,7 @@ export function Settings({ showNotification }: SettingsProps) {
                       <RotateCcw className="h-4 w-4 mr-2" />
                       Yes, Reset Game
                     </Button>
-                    <Button 
+                    <Button
                       onClick={() => setShowResetConfirm(false)}
                       variant="outline"
                       size="sm"
@@ -331,10 +343,9 @@ export function Settings({ showNotification }: SettingsProps) {
                 </div>
               )}
             </div>
-
           </div>
         </ScrollArea>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

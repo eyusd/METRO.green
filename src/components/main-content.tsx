@@ -43,6 +43,9 @@ export function MainContent() {
   // Get station count for celebration
   const { getStationCount } = useGameStore()
   
+  // Centralized modal state management - only one can be open at a time
+  const [activeModal, setActiveModal] = useState<'statistics' | 'capture' | 'settings' | null>(null)
+  
   // Centralized celebration state
   const [showCelebration, setShowCelebration] = useState(false)
   const [celebrationData, setCelebrationData] = useState<CelebrationData | null>(null)
@@ -50,6 +53,15 @@ export function MainContent() {
   // Centralized notification state
   const [showNotification, setShowNotification] = useState(false)
   const [notificationData, setNotificationData] = useState<NotificationData | null>(null)
+
+  // Helper functions to manage modals
+  const openModal = (modalType: 'statistics' | 'capture' | 'settings') => {
+    setActiveModal(modalType)
+  }
+
+  const closeModal = () => {
+    setActiveModal(null)
+  }
 
   // Helper functions to show notifications and celebrations
   const showNotificationHelper = (data: NotificationData) => {
@@ -134,7 +146,11 @@ export function MainContent() {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.6, duration: 0.3 }}
               >
-                <Statistics showNotification={showNotificationHelper} />
+                <Statistics 
+                  showNotification={showNotificationHelper}
+                  isOpen={activeModal === 'statistics'}
+                  onOpenChange={(open) => open ? openModal('statistics') : closeModal()}
+                />
               </motion.div>
               
               {/* Capture Button - Emphasized */}
@@ -152,6 +168,8 @@ export function MainContent() {
                 <Capture 
                   showNotification={showNotificationHelper}
                   showCelebration={showCelebrationHelper}
+                  isOpen={activeModal === 'capture'}
+                  onOpenChange={(open) => open ? openModal('capture') : closeModal()}
                 />
               </motion.div>
               
@@ -162,7 +180,11 @@ export function MainContent() {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.6, duration: 0.3 }}
               >
-                <Settings showNotification={showNotificationHelper} />
+                <Settings 
+                  showNotification={showNotificationHelper}
+                  isOpen={activeModal === 'settings'}
+                  onOpenChange={(open) => open ? openModal('settings') : closeModal()}
+                />
               </motion.div>
             </motion.div>
             {/* Safe area spacing for iOS devices */}
