@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -14,75 +14,79 @@ import { useGameStore } from "@/lib/store";
 
 // Shared notification data type
 export interface NotificationData {
-  type: 'error' | 'warning' | 'info' | 'success'
-  title: string
-  message: string
+  type: "error" | "warning" | "info" | "success";
+  title: string;
+  message: string;
   details?: {
-    stationName?: string
-    confidence?: number
-    distanceFromStation?: number
-    reason?: string
-    tip?: string
-  }
+    stationName?: string;
+    confidence?: number;
+    distanceFromStation?: number;
+    reason?: string;
+    tip?: string;
+  };
 }
 
 // Shared celebration data type
 export interface CelebrationData {
-  stationName: string
+  stationName: string;
   lines: Array<{
-    lineName: string
-    lineColor: string
-    rescom: string
-  }>
-  confidence?: number
-  distanceFromStation?: number
-  isNewStation?: boolean
+    lineName: string;
+    lineColor: string;
+    rescom: string;
+  }>;
+  confidence?: number;
+  distanceFromStation?: number;
+  isNewStation?: boolean;
 }
 
 export function MainContent() {
   // Get station count for celebration
-  const { getStationCount } = useGameStore()
-  
+  const { getStationCount } = useGameStore();
+
   // Centralized modal state management - only one can be open at a time
-  const [activeModal, setActiveModal] = useState<'statistics' | 'capture' | 'settings' | null>(null)
-  
+  const [activeModal, setActiveModal] = useState<
+    "statistics" | "capture" | "settings" | null
+  >(null);
+
   // Centralized celebration state
-  const [showCelebration, setShowCelebration] = useState(false)
-  const [celebrationData, setCelebrationData] = useState<CelebrationData | null>(null)
-  
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationData, setCelebrationData] =
+    useState<CelebrationData | null>(null);
+
   // Centralized notification state
-  const [showNotification, setShowNotification] = useState(false)
-  const [notificationData, setNotificationData] = useState<NotificationData | null>(null)
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationData, setNotificationData] =
+    useState<NotificationData | null>(null);
 
   // Helper functions to manage modals
-  const openModal = (modalType: 'statistics' | 'capture' | 'settings') => {
-    setActiveModal(modalType)
-  }
+  const openModal = (modalType: "statistics" | "capture" | "settings") => {
+    setActiveModal(modalType);
+  };
 
   const closeModal = () => {
-    setActiveModal(null)
-  }
+    setActiveModal(null);
+  };
 
   // Helper functions to show notifications and celebrations
   const showNotificationHelper = (data: NotificationData) => {
-    setNotificationData(data)
-    setShowNotification(true)
-  }
+    setNotificationData(data);
+    setShowNotification(true);
+  };
 
   const showCelebrationHelper = (data: CelebrationData) => {
-    setCelebrationData(data)
-    setShowCelebration(true)
-  }
+    setCelebrationData(data);
+    setShowCelebration(true);
+  };
 
   return (
     <>
-    {/* Global Station Celebration Component */}
+      {/* Global Station Celebration Component */}
       {celebrationData && (
         <StationCelebration
           isOpen={showCelebration}
           onClose={() => {
-            setShowCelebration(false)
-            setCelebrationData(null)
+            setShowCelebration(false);
+            setCelebrationData(null);
           }}
           stationName={celebrationData.stationName}
           lines={celebrationData.lines}
@@ -98,8 +102,8 @@ export function MainContent() {
         <StationNotification
           isOpen={showNotification}
           onClose={() => {
-            setShowNotification(false)
-            setNotificationData(null)
+            setShowNotification(false);
+            setNotificationData(null);
           }}
           type={notificationData.type}
           title={notificationData.title}
@@ -111,79 +115,85 @@ export function MainContent() {
         <div className="h-dvh w-screen max-w-xl relative">
           {/* App Title */}
           <AppTitle />
-          
+
           <MapStations
             stations={stations}
             className="h-dvh w-screen max-w-xl"
           />
           {/* Modern Mobile Bottom Bar */}
-          <motion.div 
+          <motion.div
             className="absolute bottom-0 left-0 w-full bg-gray-950 backdrop-blur-xl rounded-t-lg shadow-2xl shadow-black/5 z-10"
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 300, 
+            transition={{
+              type: "spring",
+              stiffness: 300,
               damping: 30,
-              delay: 0.2 
+              delay: 0.2,
             }}
           >
-            <motion.div 
+            <motion.div
               className="flex items-center justify-between px-6 py-3 max-w-xl mx-auto"
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 400, 
+              transition={{
+                type: "spring",
+                stiffness: 400,
                 damping: 25,
-                delay: 0.4 
+                delay: 0.4,
               }}
             >
               {/* Statistics Button */}
-              <motion.div 
+              <motion.div
                 className="flex-1 flex justify-start"
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.6, duration: 0.3 }}
               >
-                <Statistics 
+                <Statistics
                   showNotification={showNotificationHelper}
-                  isOpen={activeModal === 'statistics'}
-                  onOpenChange={(open) => open ? openModal('statistics') : closeModal()}
+                  isOpen={activeModal === "statistics"}
+                  onOpenChange={(open) =>
+                    open ? openModal("statistics") : closeModal()
+                  }
                 />
               </motion.div>
-              
+
               {/* Capture Button - Emphasized */}
-              <motion.div 
+              <motion.div
                 className="relative flex-shrink-0 mx-4"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 500, 
+                transition={{
+                  type: "spring",
+                  stiffness: 500,
                   damping: 20,
-                  delay: 0.5 
+                  delay: 0.5,
                 }}
               >
-                <Capture 
+                <Capture
                   showNotification={showNotificationHelper}
                   showCelebration={showCelebrationHelper}
-                  isOpen={activeModal === 'capture'}
-                  onOpenChange={(open) => open ? openModal('capture') : closeModal()}
+                  isOpen={activeModal === "capture"}
+                  onOpenChange={(open) =>
+                    open ? openModal("capture") : closeModal()
+                  }
                 />
               </motion.div>
-              
+
               {/* Settings Button */}
-              <motion.div 
+              <motion.div
                 className="flex-1 flex justify-end"
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.6, duration: 0.3 }}
               >
-                <Settings 
+                <Settings
                   showNotification={showNotificationHelper}
-                  isOpen={activeModal === 'settings'}
-                  onOpenChange={(open) => open ? openModal('settings') : closeModal()}
+                  isOpen={activeModal === "settings"}
+                  onOpenChange={(open) =>
+                    open ? openModal("settings") : closeModal()
+                  }
                 />
               </motion.div>
             </motion.div>
@@ -193,5 +203,5 @@ export function MainContent() {
         </div>
       </main>
     </>
-  )
+  );
 }

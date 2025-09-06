@@ -68,13 +68,6 @@ export async function POST(request: Request): Promise<Response> {
       );
       
       responseData.validation = validation;
-
-      // Log validation results for monitoring
-      console.log("Station validation:", {
-        aiStation: aiResult.station_name,
-        userCoords: userCoords,
-        validation: validation,
-      });
     }
 
     return Response.json(
