@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import { useGameStore } from "@/lib/store";
 import { stations } from "@/lib/stations";
 import { StatisticsIcon } from "./statistics-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import Image from "next/image";
 import type { NotificationData } from "./main-content";
 
 interface StatisticsProps {
@@ -89,7 +90,7 @@ const sortLines = (lines: LineStats[], mode: string): LineStats[] => {
   });
 };
 
-export function Statistics({ showNotification, isOpen, onOpenChange }: StatisticsProps) {
+export function Statistics({ isOpen, onOpenChange }: StatisticsProps) {
   const visitedStations = useGameStore((state) => state.visitedStations);
 
   // Calculate statistics for each line grouped by mode
@@ -279,7 +280,9 @@ export function Statistics({ showNotification, isOpen, onOpenChange }: Statistic
               .map(([mode, lines]) => (
                 <div key={mode} className="space-y-3">
                   <h3 className="font-semibold text-base text-white flex items-center">
-                    <img
+                    <Image
+                      width={24}
+                      height={24}
                       src={`/icons/${mode}.svg`}
                       alt={mode}
                       className="w-6 h-6 object-contain inline-block mr-2"

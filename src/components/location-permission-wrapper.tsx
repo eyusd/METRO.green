@@ -21,7 +21,6 @@ interface LocationData {
 export function LocationPermissionWrapper({ children, onLocationChange }: LocationPermissionWrapperProps) {
   const [permissionState, setPermissionState] = useState<"pending" | "granted" | "denied" | "error">("pending")
   const [isLoading, setIsLoading] = useState(false)
-  const [location, setLocation] = useState<LocationData | null>(null)
   const [watchId, setWatchId] = useState<number | null>(null)
 
   // Notification state
@@ -79,7 +78,7 @@ export function LocationPermissionWrapper({ children, onLocationChange }: Locati
               stopLocationTracking()
             }
           })
-        } catch (error) {
+        } catch {
           // Permissions API might not support geolocation query on all browsers
           setPermissionState('pending')
         }
@@ -137,8 +136,6 @@ export function LocationPermissionWrapper({ children, onLocationChange }: Locati
             accuracy: position.coords.accuracy,
             timestamp: position.timestamp
           }
-          
-          setLocation(locationData)
           setPermissionState('granted')
           setIsLoading(false)
           
@@ -216,15 +213,6 @@ export function LocationPermissionWrapper({ children, onLocationChange }: Locati
 
     const id = navigator.geolocation.watchPosition(
       (position) => {
-        const locationData: LocationData = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          timestamp: position.timestamp
-        }
-        
-        setLocation(locationData)
-        
         if (onLocationChange) {
           onLocationChange(position)
         }

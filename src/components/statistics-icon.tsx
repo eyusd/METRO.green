@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import { ComponentProps } from "react";
 
 interface LineStats {
@@ -102,7 +103,9 @@ export function StatisticsIcon({
         )}
         {/* Line Icon in Center */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <img
+          <Image
+            width={32}
+            height={32}
             src={getLineIconUrl(line.mode, line.lineName)}
             alt={`${line.mode} ${line.lineName}`}
             className="w-8 h-8 object-contain"

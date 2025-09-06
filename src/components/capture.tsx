@@ -24,7 +24,6 @@ interface CaptureProps {
 export function Capture({ showNotification, showCelebration, isOpen, onOpenChange }: CaptureProps) {
   const {
     stream,
-    facingMode,
     availableCameras,
     isProcessing,
     videoRef,

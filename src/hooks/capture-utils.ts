@@ -82,7 +82,7 @@ export async function captureWithImageCapture(
     throw new Error("No video track available");
   }
 
-  const imageCapture = new (window as any).ImageCapture(track);
+  const imageCapture = new window.ImageCapture(track);
   return await imageCapture.takePhoto({
     imageWidth: maxWidth,
     imageHeight: maxHeight,
@@ -128,7 +128,7 @@ export async function captureWithCanvas(
 
     // Use requestVideoFrameCallback for better timing if available
     if ('requestVideoFrameCallback' in video) {
-      (video as any).requestVideoFrameCallback(() => {
+      video.requestVideoFrameCallback(() => {
         context.drawImage(video, 0, 0, targetWidth, targetHeight);
         
         canvas.toBlob(
