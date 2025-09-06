@@ -10,6 +10,12 @@ export async function POST(request: Request): Promise<Response> {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const userCoords = parseCoordinates(formData);
+    if (!file) {
+        return Response.json(
+            { success: false, error: "No file provided" } satisfies ApiResponse,
+            { status: 400 }
+        );
+    }
 
     if (!userCoords) {
       return Response.json(
@@ -18,23 +24,17 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // Validate file
-    const fileValidation = validateFile(file);
+    const [fileValidation, nearStationCheck] = await Promise.all([
+      validateFile(file),
+      isUserNearAnyStation(userCoords),
+    ]);
+
     if (!fileValidation.valid) {
       return Response.json(
         { success: false, error: fileValidation.error } satisfies ApiResponse,
         { status: 400 }
       );
     }
-
-    if (!file) {
-        return Response.json(
-            { success: false, error: "No file provided" } satisfies ApiResponse,
-            { status: 400 }
-        );
-    }
-
-    const nearStationCheck = isUserNearAnyStation(userCoords);
     if (!nearStationCheck.isNearStation) {
       const nearestInfo = nearStationCheck.nearestStation && nearStationCheck.nearestDistance
         ? ` The nearest station is ${nearStationCheck.nearestStation} at ${nearStationCheck.nearestDistance}m away.`
