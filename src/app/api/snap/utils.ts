@@ -4,7 +4,7 @@
 
 import Fuse from 'fuse.js';
 import { stations } from '@/lib/stations';
-import type { FeatureCollection, Feature, Point } from 'geojson';
+import type { Feature, Point } from 'geojson';
 
 // Types
 export interface StationProperties {
@@ -15,7 +15,7 @@ export interface StationProperties {
   colourweb_hexa: string;
 }
 
-export interface StationFeature extends Feature<Point, StationProperties> {}
+export type StationFeature = Feature<Point, StationProperties>;
 
 export interface StationMatch {
   station: string;

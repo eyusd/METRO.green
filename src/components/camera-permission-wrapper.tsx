@@ -125,43 +125,46 @@ export function CameraPermissionWrapper({ children }: CameraPermissionWrapperPro
       stream.getTracks().forEach(track => track.stop())
       
       setPermissionState('granted')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Camera permission error:', error)
-      
-      // Handle specific error types
-      if (error.name === 'NotAllowedError') {
-        setPermissionState('denied')
-      } else if (error.name === 'NotFoundError') {
-        setNotificationData({
-          type: 'error',
-          title: 'No Camera Found',
-          message: 'No camera found on this device.',
-          details: {
-            reason: 'Device does not have a camera or camera is not accessible',
-            tip: 'Make sure your device has a working camera'
-          }
-        })
-        setShowNotification(true)
-        setPermissionState('error')
-      } else if (error.name === 'NotSupportedError') {
-        setNotificationData({
-          type: 'error',
-          title: 'Camera Not Supported',
-          message: 'Camera access is not supported in this browser.',
-          details: {
-            reason: 'Browser does not support camera access',
-            tip: 'Try using a different browser or updating your current browser'
-          }
-        })
-        setShowNotification(true)
-        setPermissionState('error')
+      if (error instanceof DOMException) {
+        // Handle specific error types
+        if (error.name === 'NotAllowedError') {
+          setPermissionState('denied')
+        } else if (error.name === 'NotFoundError') {
+          setNotificationData({
+            type: 'error',
+            title: 'No Camera Found',
+            message: 'No camera found on this device.',
+            details: {
+              reason: 'Device does not have a camera or camera is not accessible',
+              tip: 'Make sure your device has a working camera'
+            }
+          })
+          setShowNotification(true)
+          setPermissionState('error')
+        } else if (error.name === 'NotSupportedError') {
+          setNotificationData({
+            type: 'error',
+            title: 'Camera Not Supported',
+            message: 'Camera access is not supported in this browser.',
+            details: {
+              reason: 'Browser does not support camera access',
+              tip: 'Try using a different browser or updating your current browser'
+            }
+          })
+          setShowNotification(true)
+          setPermissionState('error')
+        } else {
+          setPermissionState('error')
+        }
       } else {
         // Try with simpler constraints as fallback
         try {
           const simpleStream = await navigator.mediaDevices.getUserMedia({ video: true })
           simpleStream.getTracks().forEach(track => track.stop())
           setPermissionState('granted')
-        } catch (fallbackError) {
+        } catch {
           setPermissionState('denied')
         }
       }
@@ -206,7 +209,7 @@ export function CameraPermissionWrapper({ children }: CameraPermissionWrapperPro
               <ol className="text-sm text-left space-y-1 text-muted-foreground">
                 <li>1. Tap the address/URL bar in your browser</li>
                 <li>2. Look for a camera icon and tap it</li>
-                <li>3. Select "Allow" for camera access</li>
+                <li>3. Select &quot;Allow&quot; for camera access</li>
                 <li>4. Refresh this page</li>
               </ol>
               <Button 

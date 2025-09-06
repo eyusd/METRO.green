@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { BarChart3, TrendingUp, X } from "lucide-react"
+import { TrendingUp, X } from "lucide-react"
 import { useGameStore } from "@/lib/store"
 import { stations } from "@/lib/stations"
 import { StatisticsIcon } from "./statistics-icon"
@@ -84,7 +84,7 @@ const sortLines = (lines: LineStats[], mode: string): LineStats[] => {
   })
 }
 
-export function Statistics({ showNotification }: StatisticsProps) {
+export function Statistics({ }: StatisticsProps) {
   const [isOpen, setIsOpen] = useState(false)
   const visitedStations = useGameStore((state) => state.visitedStations)
 

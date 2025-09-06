@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Scan, Camera, RotateCcw, Loader2, Focus, X } from "lucide-react"
+import { Camera, RotateCcw, Loader2, Focus, X } from "lucide-react"
 import { useLocation } from "./location-context"
 import { useGameStore } from "@/lib/store"
 import { stations } from "@/lib/stations"

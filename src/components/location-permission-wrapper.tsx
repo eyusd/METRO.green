@@ -306,7 +306,7 @@ export function LocationPermissionWrapper({ children, onLocationChange }: Locati
               <ol className="text-sm text-left space-y-1 text-muted-foreground">
                 <li>1. Tap the address/URL bar in your browser</li>
                 <li>2. Look for a location icon and tap it</li>
-                <li>3. Select "Allow" for location access</li>
+                <li>3. Select &quot;Allow&quot; for location access</li>
                 <li>4. Refresh this page</li>
               </ol>
               <Button 

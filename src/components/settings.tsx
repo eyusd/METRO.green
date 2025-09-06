@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { 
-  Settings as SettingsIcon, 
   RotateCcw, 
   Trash2, 
   Download, 
@@ -25,7 +24,6 @@ import {
   X
 } from "lucide-react"
 import { useGameStore } from "@/lib/store"
-import { StationNotification } from "./station-notification"
 import type { NotificationData } from "./main-content"
 
 interface SettingsProps {

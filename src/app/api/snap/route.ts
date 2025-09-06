@@ -63,7 +63,7 @@ function validateFile(file: File | null): { valid: boolean; error?: string } {
     return { valid: false, error: "No file provided" };
   }
 
-  if (!CONFIG.ALLOWED_IMAGE_TYPES.includes(file.type as any)) {
+  if (!CONFIG.ALLOWED_IMAGE_TYPES.includes(file.type as typeof CONFIG.ALLOWED_IMAGE_TYPES[number])) {
     return { 
       valid: false, 
       error: `Invalid file type. Allowed types: ${CONFIG.ALLOWED_IMAGE_TYPES.join(', ')}` 

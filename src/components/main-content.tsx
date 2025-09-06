@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { MapStations } from "@/components/map-stations";
-import { Card, CardContent } from "@/components/ui/card";
 import stations from "@/lib/stations";
 import { Statistics } from "./statistics";
 import { Capture } from "@/components/capture";
