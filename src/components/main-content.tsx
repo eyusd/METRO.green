@@ -19,8 +19,6 @@ export interface NotificationData {
   message: string;
   details?: {
     stationName?: string;
-    confidence?: number;
-    distanceFromStation?: number;
     reason?: string;
     tip?: string;
   };
@@ -34,8 +32,6 @@ export interface CelebrationData {
     lineColor: string;
     rescom: string;
   }>;
-  confidence?: number;
-  distanceFromStation?: number;
   isNewStation?: boolean;
 }
 
@@ -90,8 +86,6 @@ export function MainContent() {
           }}
           stationName={celebrationData.stationName}
           lines={celebrationData.lines}
-          confidence={celebrationData.confidence}
-          distanceFromStation={celebrationData.distanceFromStation}
           totalStationsCollected={getStationCount()}
           isNewStation={celebrationData.isNewStation}
         />

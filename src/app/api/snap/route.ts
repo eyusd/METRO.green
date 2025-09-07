@@ -1,15 +1,21 @@
-import { validateStationAndLocation, isUserNearAnyStation } from "./utils";
-import { parseCoordinates, validateFile, fileToDataUrl } from "./form-data";
+import { findBestStationMatch } from "./utils";
+import { validateFile, fileToDataUrl } from "./form-data";
 import { analyzeImageWithGemini } from "./gemini";
 import type { ApiResponse } from "./types";
-import { CONFIG } from "./config";
+import { withRateLimit } from "@/lib/rate-limit";
 
 // POST endpoint for station recognition
 export async function POST(request: Request): Promise<Response> {
+  // Apply rate limiting
+  const rateLimitResponse = await withRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
-    const userCoords = parseCoordinates(formData);
+    
     if (!file) {
         return Response.json(
             { success: false, error: "No file provided" } satisfies ApiResponse,
@@ -17,38 +23,16 @@ export async function POST(request: Request): Promise<Response> {
         );
     }
 
-    if (!userCoords) {
-      return Response.json(
-        { success: false, error: "Invalid or missing coordinates" } satisfies ApiResponse,
-        { status: 400 }
-      );
-    }
-
-    const [fileValidation, nearStationCheck] = await Promise.all([
-      validateFile(file),
-      isUserNearAnyStation(userCoords),
-    ]);
-
+    // Validate the uploaded file
+    const fileValidation = await validateFile(file);
     if (!fileValidation.valid) {
       return Response.json(
         { success: false, error: fileValidation.error } satisfies ApiResponse,
         { status: 400 }
       );
     }
-    if (!nearStationCheck.isNearStation) {
-      const nearestInfo = nearStationCheck.nearestStation && nearStationCheck.nearestDistance
-        ? ` The nearest station is ${nearStationCheck.nearestStation} at ${nearStationCheck.nearestDistance}m away.`
-        : '';
-      
-      return Response.json(
-        { 
-          success: false, 
-          error: `You must be within ${CONFIG.MAX_DISTANCE_METERS}m of a metro station to capture a photo.${nearestInfo}` 
-        } satisfies ApiResponse,
-        { status: 400 }
-      );
-    }
 
+    // Convert file to data URL for AI analysis
     const { image, type } = await fileToDataUrl(file);
     const aiResult = await analyzeImageWithGemini(image, type);
 
@@ -57,17 +41,17 @@ export async function POST(request: Request): Promise<Response> {
       is_official_metro_sign: aiResult.is_official_metro_sign,
     };
 
-    // If a station was identified, validate it
+    // If a station was identified, validate it exists in our station database
     if (aiResult.is_official_metro_sign && aiResult.station_name) {
       responseData.station_name = aiResult.station_name;
       
-      // Validate station name and location
-      const validation = validateStationAndLocation(
-        aiResult.station_name,
-        userCoords || undefined
-      );
+      // Cross-check if the station name exists in our database
+      const stationMatch = findBestStationMatch(aiResult.station_name);
+      responseData.station_exists = !!stationMatch;
       
-      responseData.validation = validation;
+      if (stationMatch) {
+        responseData.matched_station_name = stationMatch.station;
+      }
     }
 
     return Response.json(

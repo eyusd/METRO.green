@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Camera, RotateCcw, Loader2, Focus, X } from "lucide-react";
+import { Camera, RotateCcw, Loader2, Focus, X, CloudUpload } from "lucide-react";
 import { useCapture } from "@/hooks";
 import type { NotificationData, CelebrationData } from "./main-content";
 
@@ -145,7 +145,7 @@ export function Capture({ showNotification, showCelebration, isOpen, onOpenChang
 
           {/* Camera View with Padding */}
           <motion.div
-            className="relative w-full aspect-[4/3] bg-gray-900 mx-4 rounded-lg overflow-hidden"
+            className="relative w-full aspect-[4/3] bg-gray-900 mx-4 rounded-lg overflow-hidden max-h-[40dvh]"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.3 }}
@@ -275,7 +275,7 @@ export function Capture({ showNotification, showCelebration, isOpen, onOpenChang
                     }}
                   >
                     {isProcessing ? (
-                      <Loader2 className="size-6 text-white" />
+                      <CloudUpload className="size-6 text-white" />
                     ) : (
                       <Camera className="size-6 text-white" />
                     )}

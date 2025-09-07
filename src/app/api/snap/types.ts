@@ -1,11 +1,10 @@
-import type { ValidationResult } from "./utils";
-
 export interface ApiResponse {
   success: boolean;
   data?: {
     is_official_metro_sign: boolean;
     station_name?: string;
-    validation?: ValidationResult;
+    station_exists?: boolean;
+    matched_station_name?: string;
   };
   error?: string;
 }

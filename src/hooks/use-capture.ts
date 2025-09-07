@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useLocation } from "@/components/location-context";
 import { useGameStore } from "@/lib/store";
 import type { NotificationData, CelebrationData } from "@/components/main-content";
 import {
@@ -31,7 +30,6 @@ export function useCapture({
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { getCurrentLocation, isLocationAvailable } = useLocation();
   const { addStation, hasVisitedStation } = useGameStore();
 
   // Start camera when dialog opens
@@ -106,18 +104,8 @@ export function useCapture({
         stream
       );
 
-      // Get location data if available
-      let locationData = null;
-      if (isLocationAvailable) {
-        try {
-          locationData = await getCurrentLocation();
-        } catch (error) {
-          console.warn("Could not get location for capture:", error);
-        }
-      }
-
       // Process capture with API utilities
-      await processCaptureWithApi(blob, locationData, {
+      await processCaptureWithApi(blob, {
         showNotification,
         showCelebration,
         addStation,

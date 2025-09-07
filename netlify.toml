@@ -1,0 +1,8 @@
+[functions]
+  # Set function timeout (max 10 seconds for free tier)
+  timeout = 10
+
+[build]
+  # Ensure proper Next.js build for Netlify
+  command = "pnpm run build"
+  publish = ".next"

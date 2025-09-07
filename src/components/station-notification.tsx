@@ -8,9 +8,7 @@ import {
   AlertCircle, 
   CheckCircle, 
   Info, 
-  AlertTriangle,
-  MapPin,
-  Clock
+  AlertTriangle
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -22,8 +20,6 @@ interface StationNotificationProps {
   message: string
   details?: {
     stationName?: string
-    confidence?: number
-    distanceFromStation?: number
     reason?: string
     tip?: string
   }
@@ -42,8 +38,6 @@ const NotificationCard = ({
   message: string
   details?: {
     stationName?: string
-    confidence?: number
-    distanceFromStation?: number
     reason?: string
     tip?: string
   }
@@ -152,24 +146,8 @@ const NotificationCard = ({
         >
           {details.stationName && (
             <div className="bg-white/60 p-3 rounded border border-white/40">
-              <div className="text-sm font-medium text-gray-900 mb-1">
+              <div className="text-sm font-medium text-gray-900">
                 Station: {details.stationName}
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                {details.confidence && (
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    <span>{details.confidence.toFixed(0)}% confidence</span>
-                  </div>
-                )}
-                
-                {details.distanceFromStation !== undefined && (
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>{details.distanceFromStation}m away</span>
-                  </div>
-                )}
               </div>
             </div>
           )}

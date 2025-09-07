@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, MapPin, Clock, Users } from "lucide-react"
+import { X, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface StationCelebrationProps {
@@ -15,8 +15,6 @@ interface StationCelebrationProps {
     lineColor: string
     rescom: string
   }>
-  confidence?: number
-  distanceFromStation?: number
   totalStationsCollected?: number
   isNewStation?: boolean
 }
@@ -52,8 +50,6 @@ const ConfettiParticle = ({ color, delay }: { color: string; delay: number }) =>
 const MetroTicket = ({ 
   stationName, 
   lines, 
-  confidence, 
-  distanceFromStation,
   totalStationsCollected 
 }: {
   stationName: string
@@ -62,8 +58,6 @@ const MetroTicket = ({
     lineColor: string
     rescom: string
   }>
-  confidence?: number
-  distanceFromStation?: number
   totalStationsCollected?: number
 }) => {
   const primaryLine = lines[0] // Use first line for primary theming
@@ -155,28 +149,10 @@ const MetroTicket = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
-          className="grid grid-cols-2 gap-3 text-xs"
+          className="text-xs"
         >
-          {confidence && (
-            <div className="flex items-center gap-1 bg-green-50 p-2 rounded">
-              <Clock className="w-3 h-3 text-green-600" />
-              <span className="text-green-800">
-                {confidence.toFixed(0)}% Match
-              </span>
-            </div>
-          )}
-          
-          {distanceFromStation !== undefined && (
-            <div className="flex items-center gap-1 bg-blue-50 p-2 rounded">
-              <MapPin className="w-3 h-3 text-blue-600" />
-              <span className="text-blue-800">
-                {distanceFromStation}m away
-              </span>
-            </div>
-          )}
-
           {totalStationsCollected && (
-            <div className="flex items-center gap-1 bg-purple-50 p-2 rounded col-span-2">
+            <div className="flex items-center gap-1 bg-purple-50 p-2 rounded">
               <Users className="w-3 h-3 text-purple-600" />
               <span className="text-purple-800">
                 Total Collection: {totalStationsCollected} stations
@@ -194,8 +170,6 @@ export function StationCelebration({
   onClose,
   stationName,
   lines,
-  confidence,
-  distanceFromStation,
   totalStationsCollected,
   isNewStation = true
 }: StationCelebrationProps) {
@@ -308,8 +282,6 @@ export function StationCelebration({
             <MetroTicket
               stationName={stationName}
               lines={lines}
-              confidence={confidence}
-              distanceFromStation={distanceFromStation}
               totalStationsCollected={totalStationsCollected}
             />
 

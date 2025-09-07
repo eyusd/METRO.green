@@ -5,11 +5,6 @@
 import { stations } from "@/lib/stations";
 import type { NotificationData, CelebrationData } from "@/components/main-content";
 
-export interface LocationData {
-  latitude: number;
-  longitude: number;
-}
-
 export interface StationLine {
   lineName: string;
   lineColor: string;
@@ -30,28 +25,17 @@ export interface SnapApiResponse {
   data?: {
     is_official_metro_sign: boolean;
     station_name?: string;
-    validation?: {
-      isValid: boolean;
-      matchedStation?: string;
-      confidence?: number;
-      distanceFromStation?: number;
-      error?: string;
-    };
+    station_exists?: boolean;
+    matched_station_name?: string;
   };
 }
 
 /**
  * Prepare form data for API submission
  */
-export function createApiFormData(blob: Blob, locationData?: LocationData | null): FormData {
+export function createApiFormData(blob: Blob): FormData {
   const formData = new FormData();
   formData.append("file", blob, "station-capture.jpg");
-
-  if (locationData) {
-    formData.append("latitude", locationData.latitude.toString());
-    formData.append("longitude", locationData.longitude.toString());
-  }
-
   return formData;
 }
 
@@ -98,11 +82,10 @@ export function getStationLines(stationName: string): StationLine[] {
 }
 
 /**
- * Handle successful station validation
+ * Handle successful station capture
  */
 export function handleValidStationCapture(
   stationName: string,
-  validation: NonNullable<SnapApiResponse['data']>['validation'],
   callbacks: ProcessCaptureCallbacks
 ): boolean {
   const { addStation, hasVisitedStation, showCelebration, showNotification } = callbacks;
@@ -117,8 +100,6 @@ export function handleValidStationCapture(
     showCelebration({
       stationName,
       lines,
-      confidence: validation?.confidence ? validation.confidence * 100 : undefined,
-      distanceFromStation: validation?.distanceFromStation,
       isNewStation: true,
     });
 
@@ -131,8 +112,6 @@ export function handleValidStationCapture(
       message: `You've already visited ${stationName}!`,
       details: {
         stationName,
-        confidence: validation?.confidence ? validation.confidence * 100 : undefined,
-        distanceFromStation: validation?.distanceFromStation,
         tip: "Find new stations to expand your collection",
       },
     });
@@ -142,26 +121,22 @@ export function handleValidStationCapture(
 }
 
 /**
- * Handle validation failure
+ * Handle station not found in database
  */
-export function handleValidationFailure(
-  validation: NonNullable<SnapApiResponse['data']>['validation'],
+export function handleStationNotFound(
+  stationName: string,
   callbacks: ProcessCaptureCallbacks
 ): void {
   const { showNotification } = callbacks;
 
   showNotification({
     type: "warning",
-    title: "Station Validation Failed",
-    message: validation?.matchedStation
-      ? `Station "${validation.matchedStation}" didn't meet validation criteria`
-      : "Could not validate this as a metro station",
+    title: "Station Not Recognized",
+    message: `Station "${stationName}" is not in our database`,
     details: {
-      stationName: validation?.matchedStation,
-      confidence: validation?.confidence ? validation.confidence * 100 : undefined,
-      distanceFromStation: validation?.distanceFromStation,
-      reason: validation?.error || "Validation criteria not met",
-      tip: "Try getting closer to the station or ensuring the sign is clearly visible",
+      stationName,
+      reason: "Station not found in RATP database",
+      tip: "Make sure the station name is clearly visible and correctly detected",
     },
   });
 }
@@ -219,24 +194,23 @@ export function processApiResponse(
   let stationAdded = false;
 
   if (data?.is_official_metro_sign) {
-    if (data.validation) {
-      const { validation } = data;
-
-      // Add station to game if validation criteria are met
-      if (validation.isValid && validation.matchedStation) {
-        stationAdded = handleValidStationCapture(validation.matchedStation, validation, callbacks);
+    if (data.station_name) {
+      if (data.station_exists && data.matched_station_name) {
+        // Station exists in database, add it to collection
+        stationAdded = handleValidStationCapture(data.matched_station_name, callbacks);
       } else {
-        // Validation failed
-        handleValidationFailure(validation, callbacks);
+        // Station detected but not found in database
+        handleStationNotFound(data.station_name, callbacks);
       }
     } else {
-      // No validation data
-      handleMetroSignNoValidation(data.station_name, callbacks);
+      // Metro sign detected but no station name
+      handleMetroSignNoValidation(undefined, callbacks);
     }
   } else {
     // Not a metro sign
     handleNonMetroSign(callbacks);
   }
+  
   return stationAdded;
 }
 
@@ -245,11 +219,10 @@ export function processApiResponse(
  */
 export async function processCaptureWithApi(
   blob: Blob,
-  locationData: LocationData | null,
   callbacks: ProcessCaptureCallbacks
 ): Promise<boolean> {
   // Prepare and submit to API
-  const formData = createApiFormData(blob, locationData);
+  const formData = createApiFormData(blob);
   const result = await submitCaptureToApi(formData);
 
   // Process the response
