@@ -2,8 +2,8 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "Metro.green",
-  "alternateName": "Metro.green - Discover Paris Metro Stations",
-  "description": "Like a Pokédex, but for metro stations! Explore, discover, and collect Paris metro stations with our gamified location-based app.",
+  "alternateName": "Metro.green - Explore Paris, one station at a time",
+  "description": "You think you know Paris? Think again. Metro.green is an invitation to tear up the well-worn routes and forge your own path through the City of Lights. This is your adventure. Uncover the real Paris, one station at a time. Where will the journey take you?",
   "url": "https://metro.green",
   "applicationCategory": "TravelApplication",
   "operatingSystem": "Web Browser",
@@ -23,7 +23,7 @@
   "screenshot": "https://metro.green/android-chrome-512x512.png",
   "author": {
     "@type": "Organization",
-    "name": "Metro.green Team"
+    "name": "eyusd."
   },
   "aggregateRating": {
     "@type": "AggregateRating",
@@ -43,6 +43,6 @@
   },
   "creator": {
     "@type": "Organization",
-    "name": "Metro.green Team"
+    "name": "eyusd."
   }
 }

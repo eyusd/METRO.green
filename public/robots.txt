@@ -7,7 +7,4 @@ Sitemap: https://metro.green/sitemap.xml
 # Block access to sensitive areas
 Disallow: /api/
 Disallow: /_next/
-Disallow: /certificates/
 
-# Allow specific files
-Allow: /api/snap

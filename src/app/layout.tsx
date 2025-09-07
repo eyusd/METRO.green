@@ -14,10 +14,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Metro.green - Discover Paris Metro Stations",
+    default: "Metro.green - Explore Paris, one station at a time",
     template: "%s | Metro.green"
   },
-  description: "Like a Pokédex, but for metro stations! Explore, discover, and collect Paris metro stations with our gamified location-based app. Track your progress and become a true metro explorer.",
+  description: "You think you know Paris? Think again. Metro.green is an invitation to tear up the well-worn routes and forge your own path through the City of Lights. This is your adventure. Uncover the real Paris, one station at a time. Where will the journey take you?",
   keywords: [
     "metro", "paris", "transport", "stations", "exploration", "gamification",
     "location-based", "discovery", "public transport", "RATP", "subway",
@@ -39,8 +39,8 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://metro.green',
-    title: 'Metro.green - Discover Paris Metro Stations',
-    description: 'Like a Pokédex, but for metro stations! Explore, discover, and collect Paris metro stations with our gamified location-based app.',
+    title: 'Metro.green - Explore Paris, one station at a time',
+    description: 'You think you know Paris? Think again. Metro.green is an invitation to tear up the well-worn routes and forge your own path through the City of Lights. This is your adventure. Uncover the real Paris, one station at a time. Where will the journey take you?',
     siteName: 'Metro.green',
     images: [
       {
@@ -53,8 +53,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Metro.green - Discover Paris Metro Stations',
-    description: 'Like a Pokédex, but for metro stations! Explore and collect Paris metro stations.',
+    title: 'Metro.green - Explore Paris, one station at a time',
+    description: 'You think you know Paris? Think again. Metro.green is an invitation to tear up the well-worn routes and forge your own path through the City of Lights. This is your adventure. Uncover the real Paris, one station at a time. Where will the journey take you?',
     images: ['/android-chrome-512x512.png'],
     creator: '@metro_green',
   },
@@ -137,8 +137,8 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebApplication",
               "name": "Metro.green",
-              "alternateName": "Metro.green - Discover Paris Metro Stations",
-              "description": "Like a Pokédex, but for metro stations! Explore, discover, and collect Paris metro stations with our gamified location-based app.",
+              "alternateName": "Metro.green - Explore Paris, one station at a time",
+              "description": "You think you know Paris? Think again. Metro.green is an invitation to tear up the well-worn routes and forge your own path through the City of Lights. This is your adventure. Uncover the real Paris, one station at a time. Where will the journey take you?",
               "url": "https://metro.green",
               "applicationCategory": "TravelApplication",
               "operatingSystem": "Web Browser",
