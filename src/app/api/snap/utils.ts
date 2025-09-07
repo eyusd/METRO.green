@@ -2,7 +2,6 @@
  * Utility functions for Paris Metro station validation and matching
  */
 
-import Fuse from 'fuse.js';
 import { stations } from '@/lib/stations';
 import type { Feature, Point } from 'geojson';
 import { CONFIG } from './config';
@@ -38,6 +37,24 @@ export interface ValidationResult {
 const EARTH_RADIUS_METERS = 6371000;
 
 /**
+ * Normalize a station name to ASCII, keeping only letters and numbers
+ */
+function normalizeStationName(name: string): string {
+  if (!name || typeof name !== 'string') {
+    return '';
+  }
+  
+  // Convert to lowercase and normalize to ASCII
+  const normalized = name
+    .toLowerCase()
+    .normalize('NFD') // Decompose accented characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+    .replace(/[^a-z0-9]/g, ''); // Keep only letters and numbers
+  
+  return normalized;
+}
+
+/**
  * Get station features from the GeoJSON
  */
 function getStationFeatures(): StationFeature[] {
@@ -69,59 +86,34 @@ export function calculateDistance(
 }
 
 /**
- * Create and configure Fuse.js instance for fuzzy station name matching
- */
-function createFuseInstance(): Fuse<StationFeature> {
-  const stationFeatures = getStationFeatures();
-  
-  return new Fuse(stationFeatures, {
-    includeScore: true,
-    threshold: CONFIG.FUZZY_SEARCH_THRESHOLD,
-    ignoreLocation: true,
-    keys: ['properties.nom_gares'],
-    findAllMatches: false,
-    minMatchCharLength: 2,
-  });
-}
-
-// Singleton Fuse instance for better performance
-let fuseInstance: Fuse<StationFeature> | null = null;
-
-/**
- * Get or create the Fuse instance (lazy initialization)
- */
-function getFuseInstance(): Fuse<StationFeature> {
-  if (!fuseInstance) {
-    fuseInstance = createFuseInstance();
-  }
-  return fuseInstance;
-}
-
-/**
- * Find the best matching station name using fuzzy search
+ * Find exact matching station name using normalized ASCII comparison
  */
 export function findBestStationMatch(searchTerm: string): StationMatch | null {
   if (!searchTerm || typeof searchTerm !== 'string') {
     return null;
   }
 
-  const fuse = getFuseInstance();
-  const results = fuse.search(searchTerm.trim());
-
-  if (results.length === 0) {
+  const normalizedSearchTerm = normalizeStationName(searchTerm);
+  if (!normalizedSearchTerm) {
     return null;
   }
 
-  const bestMatch = results[0];
-  const stationFeature = bestMatch.item;
-  const score = 1 - (bestMatch.score || 0); // Convert to confidence score (higher is better)
+  const stationFeatures = getStationFeatures();
+  
+  for (const stationFeature of stationFeatures) {
+    const normalizedStationName = normalizeStationName(stationFeature.properties.nom_gares);
+    
+    if (normalizedStationName === normalizedSearchTerm) {
+      return {
+        station: stationFeature.properties.nom_gares,
+        score: 1.0, // Perfect match
+        coordinates: stationFeature.geometry.coordinates as [number, number],
+        properties: stationFeature.properties,
+      };
+    }
+  }
 
-  return {
-    station: stationFeature.properties.nom_gares,
-    score,
-    coordinates: stationFeature.geometry.coordinates as [number, number],
-    properties: stationFeature.properties,
-  };
+  return null;
 }
 
 /**
@@ -204,7 +196,7 @@ export function validateStationAndLocation(
       };
     }
 
-    // Find best matching station
+    // Find exact matching station
     const match = findBestStationMatch(stationName);
     
     if (!match) {
@@ -215,14 +207,8 @@ export function validateStationAndLocation(
       };
     }
 
-    // Check confidence threshold
-    if (match.score < CONFIG.MIN_CONFIDENCE_SCORE) {
-      return {
-        isValid: false,
-        confidence: match.score,
-        error: `Station match confidence too low (${(match.score * 100).toFixed(1)}%)`,
-      };
-    }
+    // Since we use exact matching now, confidence is always 1.0 for matches
+    // No need to check confidence threshold
 
     // If no user coordinates provided, return match result only
     if (!userCoords) {

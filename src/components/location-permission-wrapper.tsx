@@ -11,13 +11,6 @@ interface LocationPermissionWrapperProps {
   onLocationChange?: (position: GeolocationPosition) => void
 }
 
-interface LocationData {
-  latitude: number
-  longitude: number
-  accuracy: number
-  timestamp: number
-}
-
 export function LocationPermissionWrapper({ children, onLocationChange }: LocationPermissionWrapperProps) {
   const [permissionState, setPermissionState] = useState<"pending" | "granted" | "denied" | "error">("pending")
   const [isLoading, setIsLoading] = useState(false)
@@ -130,12 +123,6 @@ export function LocationPermissionWrapper({ children, onLocationChange }: Locati
       // Request high-accuracy location
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const locationData: LocationData = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            accuracy: position.coords.accuracy,
-            timestamp: position.timestamp
-          }
           setPermissionState('granted')
           setIsLoading(false)
           
@@ -364,5 +351,3 @@ export function LocationPermissionWrapper({ children, onLocationChange }: Locati
     </main>
   )
 }
-
-export type { LocationData }
